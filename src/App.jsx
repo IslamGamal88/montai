@@ -1,35 +1,87 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import Navbar from "./components/Navbar";
+import Chat from "./components/Chat";
+import Sidebar from "./components/Sidebar";
+import { useEffect, useState } from "react";
+import { store } from "./utils/localStore";
 function App() {
-  const [count, setCount] = useState(0)
+  const [chats, setChats] = useState([]);
+  const [currentChat, setCurrentChat] = useState(null);
+
+  const init = () => {
+    const chats = store.get("chats") || [];
+    if (!chats.length) {
+      addChat();
+    }
+    setChats(chats);
+  };
+
+  const addChat = () => {
+    const chat = { id: new Date(), messages: [] };
+    const newChats = [...chats, chat];
+
+    setChats(newChats);
+    setCurrentChat(chat);
+    store.set("chats", newChats);
+    store.set("currentChat", chat);
+  };
+
+  const deleteChat = (id) => {
+    if (chats.length === 1) {
+      clearHistory();
+      return;
+    } else {
+      const newChats = chats.filter((chat) => chat.id !== id);
+      store.set("chats", newChats);
+      setChats(newChats);
+    }
+  };
+
+  const selectChat = (id) => {
+    const chat = chats.find((chat) => chat.id === id);
+    setCurrentChat(chat);
+  };
+
+  const clearHistory = () => {
+    setChats([]);
+    store.clear();
+  };
+
+  const addMessage = (message) => {
+    const newChat = {
+      ...currentChat,
+      messages: [...currentChat.messages, message],
+    };
+    const newChats = chats.map((chat) =>
+      chat.id === currentChat.id ? newChat : chat
+    );
+    setChats(newChats);
+    setCurrentChat(newChat);
+    store.set("chats", newChats);
+    store.set("currentChat", newChat);
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="flex h-screen flex-col">
+      <Navbar />
+      <div className="flex h-full">
+        <Sidebar
+          chats={chats}
+          handleDeleteChat={deleteChat}
+          handleClearHistory={clearHistory}
+          handleSelectChat={selectChat}
+          handleCreateChat={addChat}
+        />
+        <Chat
+          messages={currentChat.messages || []}
+          handleAddMessage={addMessage}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;
