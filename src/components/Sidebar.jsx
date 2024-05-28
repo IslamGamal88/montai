@@ -8,7 +8,7 @@ function Sidebar({
   handleCreateChat,
 }) {
   return (
-    <aside className="bg-[#180030] max-w-40 w-1/3 md:max-w-60 h-full flex flex-col justify-between">
+    <aside className="bg-[#180030] max-w-40 w-1/3 md:max-w-60 h-auto flex flex-col justify-between">
       <nav>
         <div className="flex justify-center pt-2">
           <button

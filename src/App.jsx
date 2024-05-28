@@ -3,9 +3,14 @@ import Chat from "./components/Chat";
 import Sidebar from "./components/Sidebar";
 import { useEffect, useState } from "react";
 import { store } from "./utils/localStore";
+
 function App() {
   const [chats, setChats] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
+
+  useEffect(() => {
+    init();
+  }, []);
 
   const init = () => {
     const chats = store.get("chats") || [];
@@ -13,6 +18,7 @@ function App() {
       addChat();
     }
     setChats(chats);
+    setCurrentChat(store.get("currentChat") || chats.at(-1));
   };
 
   const addChat = () => {
@@ -32,7 +38,9 @@ function App() {
     } else {
       const newChats = chats.filter((chat) => chat.id !== id);
       store.set("chats", newChats);
+      store.set("currentChat", newChats.at(-1));
       setChats(newChats);
+      setCurrentChat(newChats.at(-1));
     }
   };
 
@@ -43,6 +51,7 @@ function App() {
 
   const clearHistory = () => {
     setChats([]);
+    setCurrentChat(null);
     store.clear();
   };
 
@@ -60,14 +69,34 @@ function App() {
     store.set("currentChat", newChat);
   };
 
-  useEffect(() => {
-    init();
-  }, []);
+  const echoMessage = (message) => {
+    setTimeout(() => {
+      setChats((prevChats) => {
+        const updatedState = prevChats.map((chat) =>
+          chat.id === currentChat.id
+            ? { ...chat, messages: [...chat.messages, message] }
+            : chat
+        );
+        store.set("chats", updatedState);
+        return updatedState;
+      });
+      setCurrentChat((prevChat) => {
+        const updatedChat = {
+          ...prevChat,
+          messages: [...prevChat.messages, message],
+        };
+        store.set("currentChat", updatedChat);
+        return updatedChat;
+      });
+    }, 1000);
+    store.set("chats", chats);
+    store.set("currentChat", currentChat);
+  };
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex flex-col">
       <Navbar />
-      <div className="flex h-full">
+      <div className="flex h-fit min-h-[calc(100vh-4rem)]">
         <Sidebar
           chats={chats}
           handleDeleteChat={deleteChat}
@@ -76,8 +105,9 @@ function App() {
           handleCreateChat={addChat}
         />
         <Chat
-          messages={currentChat.messages || []}
+          messages={currentChat?.messages || []}
           handleAddMessage={addMessage}
+          handleEchoMessage={echoMessage}
         />
       </div>
     </div>
