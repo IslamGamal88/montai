@@ -11,8 +11,8 @@ function Chat({ messages, handleAddMessage, handleEchoMessage }) {
   };
 
   const handleSubmit = (e) => {
-    setIsProcessing(true);
     e.preventDefault();
+    setIsProcessing(true);
     handleAddMessage(newMessage);
     handleEchoMessage(newMessage);
     setNewMessage("");

@@ -13,7 +13,7 @@ function Sidebar({
         <div className="flex justify-center pt-2">
           <button
             className="text-white bg-[#8002FF] rounded w-fit p-2 self-center mb-2 "
-            onClick={handleCreateChat}
+            onClick={() => handleCreateChat()}
           >
             New Chat
           </button>

@@ -21,8 +21,8 @@ function App() {
     setCurrentChat(store.get("currentChat") || chats.at(-1));
   };
 
-  const addChat = () => {
-    const chat = { id: new Date(), messages: [] };
+  const addChat = (message = null) => {
+    const chat = { id: new Date(), messages: [message] };
     const newChats = [...chats, chat];
 
     setChats(newChats);
@@ -56,41 +56,45 @@ function App() {
   };
 
   const addMessage = (message) => {
-    const newChat = {
-      ...currentChat,
-      messages: [...currentChat.messages, message],
-    };
-    const newChats = chats.map((chat) =>
-      chat.id === currentChat.id ? newChat : chat
-    );
-    setChats(newChats);
-    setCurrentChat(newChat);
-    store.set("chats", newChats);
-    store.set("currentChat", newChat);
+    if (!chats.length) {
+      addChat(message);
+    } else {
+      const newChat = {
+        ...currentChat,
+        messages: [...currentChat.messages, message],
+      };
+      const newChats = chats.map((chat) =>
+        chat.id === currentChat.id ? newChat : chat
+      );
+      setChats(newChats);
+      setCurrentChat(newChat);
+      store.set("chats", newChats);
+      store.set("currentChat", newChat);
+    }
   };
 
   const echoMessage = (message) => {
+    const cachedChats = store.get("chats");
+    const cachedCurrentChat = store.get("currentChat");
+
+    const updatedState = {
+      chats: cachedChats.map((chat) =>
+        chat.id === cachedCurrentChat.id
+          ? { ...chat, messages: [...chat.messages, message] }
+          : chat
+      ),
+      currentChat: {
+        ...cachedCurrentChat,
+        messages: [...cachedCurrentChat.messages, message],
+      },
+    };
+
     setTimeout(() => {
-      setChats((prevChats) => {
-        const updatedState = prevChats.map((chat) =>
-          chat.id === currentChat.id
-            ? { ...chat, messages: [...chat.messages, message] }
-            : chat
-        );
-        store.set("chats", updatedState);
-        return updatedState;
-      });
-      setCurrentChat((prevChat) => {
-        const updatedChat = {
-          ...prevChat,
-          messages: [...prevChat.messages, message],
-        };
-        store.set("currentChat", updatedChat);
-        return updatedChat;
-      });
+      setChats(updatedState.chats);
+      setCurrentChat(updatedState.currentChat);
+      store.set("chats", updatedState.chats);
+      store.set("currentChat", updatedState.currentChat);
     }, 1000);
-    store.set("chats", chats);
-    store.set("currentChat", currentChat);
   };
 
   return (
