@@ -21,8 +21,11 @@ function App() {
     setCurrentChat(store.get("currentChat") || chats.at(-1));
   };
 
-  const addChat = (message = null) => {
-    const chat = { id: new Date(), messages: [message] };
+  const addChat = (message) => {
+    const chat = {
+      id: new Date(),
+      messages: message ? [message] : [],
+    };
     const newChats = [...chats, chat];
 
     setChats(newChats);
